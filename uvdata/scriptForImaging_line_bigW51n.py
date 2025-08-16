@@ -1,3 +1,5 @@
+raise ValueError("Don't use this - instead, use scriptForImaging_line_cutouts_single and submit_line_cutouts_job.sh")
+
 from astropy.io import fits
 import numpy as np
 import os

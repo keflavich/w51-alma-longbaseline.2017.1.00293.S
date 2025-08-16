@@ -1,6 +1,7 @@
 """
 A dictionary of source names and their locations
 """
+raise NotImplementedError("Use W51_ALMA_2013.1.00308.S version instead")
 
 from astropy import coordinates, units as u
 

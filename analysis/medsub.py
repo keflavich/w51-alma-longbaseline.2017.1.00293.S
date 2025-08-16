@@ -10,6 +10,18 @@ fns = {(sourcename, spw): f'{basepath}/line_cubes/W51{sourcename}_only.B3.robust
 from statcont.cont_finding import c_sigmaclip_scube
 from astropy.io import fits
 for fn in fns.values():
+
+    cube = SpectralCube.read(fn)
+    if not os.path.exists(fn.replace('.fits', '.medsub.fits')):
+        print(f"Median subtracting {fn}")
+        cube.beam_threshold = 0.1
+        cube.allow_huge_operations = True
+        med = cube.median(axis=0)
+        medsub = cube - med
+        medsub.write(fn.replace('.fits', '.medsub.fits'))
+
+
+for fn in fns.values():
     outfn = fn.replace('.fits', '.cont.fits')
     if os.path.exists(outfn):
         cont = fits.getdata(outfn)
@@ -31,15 +43,9 @@ for fn in fns.values():
     if not os.path.exists(outfn):
         print(f"Subtracting continuum for {fn}")
         cube = SpectralCube.read(fn, use_dask=True)
-        contsub = cube - cont
+        try:
+            cube.allow_huge_operations = True
+        except Exception as ex:
+            print(f"Failed to set allow_huge with exception={ex} [this is expected b/c we're trying to load as a dask cube]")
+        contsub = cube - u.Quantity(cont, cube.unit)
         contsub.write(outfn)
-
-
-    cube = SpectralCube.read(fn)
-    if not os.path.exists(fn.replace('.fits', '.medsub.fits')):
-        print(f"Median subtracting {fn}")
-        cube.beam_threshold = 0.1
-        cube.allow_huge_operations = True
-        med = cube.median(axis=0)
-        medsub = cube - med
-        medsub.write(fn.replace('.fits', '.medsub.fits'))
